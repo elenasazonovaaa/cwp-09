@@ -1,28 +1,33 @@
 const Promise = require('bluebird');
-const fs = Promise.promisifyAll(require("fs"));
+const fs = require('fs');
+const fsa = Promise.promisifyAll(fs);
+const { join } = require('path');
 
-const dirs = [
+const DIRECTORIES =  [
     'dir-1/dir-1-1',
     'dir-1/dir-1-2',
     'dir-1/dir-1-2/dir-1-2-1',
     'dir-2/dir-2-1/dir-2-1-1',
     'dir-2/dir-2-2/dir-2-2-1',
-    'dir-2/dir-2-2/dir-2-2-2/dir-2-2-2-1',
+    'dir-2/dir-2-1/dir-2-2-2/dir-2-2-2-1',
     'dir-3/dir-3-1',
     'dir-3',
     'dir-3/dir-3-2/dir-3-2-1',
     'dir-3/dir-3-3/dir-3-3-1'
 ];
+const DESTINATION_PATH =  'D:\\study\\5\\node\\cwp-09\\dirs';
 
-Promise.mapSeries(dirs, (dirName) =>{
-    return dirName.split('/');
-}).then((val) =>{
-    for (let paths of val) {
-        let basesPath = './dirs/';
-        for (let path of paths) {
-            basesPath += path + '/';
-            console.log(basesPath);
-            fs.mkdir(basesPath);
+
+let currentDir = DESTINATION_PATH;
+Promise.mapSeries(DIRECTORIES, (dir) => {
+    currentDir = DESTINATION_PATH;
+    return Promise.mapSeries(dir.split('/'), (everyDir) => {
+        currentDir = join(currentDir, everyDir);
+        if (!fs.existsSync(currentDir)) {
+            return fsa.mkdirAsync(currentDir);
         }
-    }
+    })
+}).then(() => {
+    console.log('OK');
 });
+
